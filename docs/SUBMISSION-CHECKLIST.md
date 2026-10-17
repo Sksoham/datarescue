@@ -12,8 +12,8 @@ Prepared:
 
 External actions / remaining verification:
 - [x] Connect GitHub and select Sksoham as repository owner.
-- [ ] Create public `datarescue` repository, push source, and verify anonymous access and visible MIT license.
-- [ ] Observe a successful hosted CI run; do not claim CI success before it runs.
+- [x] Create public `datarescue` repository, push source, and verify anonymous access and visible MIT license.
+- [x] Build and test passed on GitHub Actions: https://github.com/Sksoham/datarescue/actions/runs/39046289722 (source commit 2656890).
 - [ ] Obtain usable Nebius Token Factory access.
 - [ ] Configure server secret and confirm a real NVIDIA Nemotron request.
 - [ ] Add measured live-inference results and useful model feedback.
