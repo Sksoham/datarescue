@@ -1,0 +1,1 @@
+{"name":"datarescue","version":"0.1.0","private":true,"type":"module","engines":{"node":">=24.0.0"},"scripts":{"build":"node scripts/build-rescue.mjs","dev":"node scripts/build-rescue.mjs && node scripts/serve-rescue.mjs","start":"node scripts/serve-rescue.mjs","test":"node scripts/build-rescue.mjs && node --test tests/rescue.test.mjs"}}

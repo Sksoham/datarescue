@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+const source=await readFile(new URL('../dist/server/index.js',import.meta.url),'utf8');
+const manifest=JSON.parse(await readFile(new URL('../dist/.openai/hosting.json',import.meta.url),'utf8'));
+assert.equal(typeof manifest, 'object');
+const worker=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+assert.equal(typeof worker.default.fetch,'function');
+const response=await worker.default.fetch(new Request('https://example.com/'),{});
+assert.equal(response.status,200);
+assert.match(await response.text(),/DataRescue/);
+console.log('Validated ESM Worker, hosting manifest and HTML response.');
