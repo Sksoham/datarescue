@@ -1,0 +1,99 @@
+[
+  {
+    "file": "hardware.csv",
+    "name": "Hardware supplier with aliases and leading-zero identifiers",
+    "repairs": [
+      {
+        "row": 1,
+        "column": 1,
+        "after": "Bolt, M6"
+      },
+      {
+        "row": 1,
+        "column": 3,
+        "after": "pcs"
+      },
+      {
+        "row": 2,
+        "column": 2,
+        "after": "48"
+      },
+      {
+        "row": 2,
+        "column": 3,
+        "after": "pcs"
+      }
+    ],
+    "held": []
+  },
+  {
+    "file": "clinic-lots.csv",
+    "name": "Clinic stock with legitimate separate lots",
+    "repairs": [],
+    "held": [
+      1,
+      2,
+      3
+    ]
+  },
+  {
+    "file": "cafe-locales.csv",
+    "name": "Cafe stock with ambiguous decimal and quantity formats",
+    "repairs": [
+      {
+        "row": 4,
+        "column": 3,
+        "after": "g"
+      }
+    ],
+    "held": [
+      1,
+      2,
+      3,
+      5
+    ]
+  },
+  {
+    "file": "multilingual.csv",
+    "name": "Clean multilingual records and quoted CSV edge cases",
+    "repairs": [],
+    "held": []
+  },
+  {
+    "file": "warehouse-conflicts.csv",
+    "name": "Warehouse duplicates and incompatible measurement scales",
+    "repairs": [],
+    "held": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "file": "untrusted-notes.csv",
+    "name": "Formula-like and instruction-like supplier text",
+    "repairs": [],
+    "held": [
+      1,
+      2
+    ]
+  },
+  {
+    "file": "unknown-schema.csv",
+    "name": "Unrecognized schema must not produce a green handoff",
+    "repairs": [],
+    "held": [
+      1,
+      2
+    ]
+  },
+  {
+    "file": "contextual-blindspot.csv",
+    "name": "Known semantic typo outside deterministic coverage",
+    "repairs": [],
+    "held": [],
+    "contextualErrors": 1,
+    "note": "One category typo remains undetected by deterministic rules. Passing the gate is not factual validation."
+  }
+]

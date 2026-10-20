@@ -1,0 +1,6 @@
+SKU,Name,Quantity,Unit,Price,Notes
+001,"Café, dark",8,kg,12.50,"Line one
+Line two"
+002,चहा,4,box,5.00,परीक्षण
+003,抹茶,3,pack,8.25,京都
+004,"Mug ""small""",0,pcs,0.00,Backorder

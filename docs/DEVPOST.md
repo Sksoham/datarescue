@@ -19,6 +19,8 @@ DataRescue imports an inventory CSV, identifies its columns, and builds a repair
 
 The implemented NVIDIA Nemotron integration is designed to review ambiguous headers and vocabulary inconsistencies through Nebius Token Factory. Suggestions must cite a matching value from another sampled row and pass validation before being shown for approval. The model cannot invent prices, quantities, identifiers, or missing values.
 
+The handoff gate previews safe repairs before approval, holds every member of unresolved duplicate groups, and splits current data into passing-checks and on-hold CSVs. A JSON report accounts for every source row and records an original-data fingerprint. Passing checks does not certify factual correctness.
+
 ## How we built it
 We built a dependency-free browser application using HTML, CSS, JavaScript, and a shared TypeScript data engine. A Fetch API backend calls Nebius Token Factory while keeping the API key on the server. Node.js 24 provides the local server and build tools, and the deployable application is a self-contained Worker.
 
@@ -30,7 +32,9 @@ CSV files need careful handling of quoted delimiters, embedded newlines, Unicode
 Live Nebius access is pending. We have implemented and tested the integration using a mocked provider response, but we are not claiming a successful live Nebius call yet.
 
 ## Accomplishments
-The local cleanup workflow is functional, including approvals, manual repairs, duplicate review, undo, before/after inspection, and exports. Thirteen automated tests pass, and desktop/mobile browser workflows have been exercised. The sample dataset has eight deterministic formatting repairs, with missing-value and duplicate decisions kept separate.
+The local cleanup workflow is functional, including approvals, manual repairs, duplicate review, undo, before/after inspection, and exports. Eighteen automated tests pass, and desktop/mobile browser workflows have been exercised. The sample dataset has eight deterministic formatting repairs, with missing-value and duplicate decisions kept separate.
+
+On 8 additional developer-authored datasets (28 rows), all 5 safe proposals matched golden labels and the expected held-row sets matched. Another 100 generated variations passed preservation checks. One deliberately included category typo remains undetected by rules; live Nemotron evaluation is still pending. These are small synthetic tests, not independent accuracy validation.
 
 ## What we learned
 Useful cleanup is not the same as aggressive correction. A system should preserve identifiers, avoid guessing business facts, explain proposed changes, and make mistakes reversible. Supporting evidence helps a reviewer, but does not remove the need for judgment.

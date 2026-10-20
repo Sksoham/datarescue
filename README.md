@@ -31,6 +31,12 @@ Start with **Approve 8 safe repairs**, inspect the remaining three findings, com
 - Retains immutable originals and an append-only audit of session decisions.
 - Exports a reviewed CSV with unresolved findings disclosed and formula-like text escaped.
 
+## Rehearse a handoff
+
+Before exporting, open **Rehearse handoff**. Preview safe repairs without applying them, hold complete duplicate groups, and download separate passing-checks and on-hold CSVs. A JSON report preserves source row lineage and a fingerprint of the parsed original data. Passing checks is not a factual accuracy guarantee.
+
+Tested on 8 new developer-authored datasets (28 rows), with all 5 safe repairs matching golden labels and 100 generated invariant variations passing. A known category typo remains undetected by rules. These are synthetic results, not independent validation. See [the evaluation and limitations](docs/EVALUATION.md).
+
 ## NVIDIA + Nebius integration
 
 The backend calls Nebius Token Factory's Chat Completions endpoint with NVIDIA Nemotron. The default model is `nvidia/nemotron-3-super-120b-a12b`; confirm its exact ID and regional availability in your account. The defaults follow [Nebius's Nemotron example](https://nebius.com/services/token-factory/nemotron).
@@ -62,10 +68,11 @@ In DataRescue, check the data-sharing consent box and click **Run AI review**. â
 ```sh
 node scripts/build-rescue.mjs
 node --test tests/rescue.test.mjs
+node scripts/evaluate-rescue.mjs
 node scripts/validate-rescue.mjs
 ```
 
-The 13 automated tests cover CSV fidelity and rejection, repair invariants, duplicate review, stale edits, numeric validation, formula escaping, AI evidence constraints, and HTTP behavior. One provider response is explicitly mocked; tests require no credentials or paid calls. A GitHub Actions workflow runs the same commands; hosted CI results will exist only after publication and execution.
+The 18 automated tests cover CSV fidelity and rejection, repair invariants, duplicate review, stale edits, numeric validation, formula escaping, AI evidence constraints, and HTTP behavior. One provider response is explicitly mocked; tests require no credentials or paid calls. A GitHub Actions workflow runs the same commands; hosted CI results will exist only after publication and execution.
 
 Desktop and mobile workflows were also exercised in a browser during development. See [validation record](docs/VALIDATION.md) for evidence and limits.
 
@@ -94,3 +101,4 @@ Track: **Best Apps and Agents**.
 ## License
 
 [MIT](LICENSE). NVIDIA models and Nebius services retain their own applicable terms; this repository does not redistribute model weights.
+

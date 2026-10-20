@@ -72,6 +72,45 @@ export function applyChanges(rows: Row[], changes: Change[]): Row[] { let result
 export function csvText(headers: string[], rows: Row[], escapeFormulas = true): string { const quote = (v: string) => { if (escapeFormulas && /^[\s]*[=+\-@\t\r]/.test(v) && !/^-?\d+(?:\.\d+)?$/.test(v.trim())) v = "'" + v; return '"' + v.replaceAll('"', '""') + '"'; }; return '\uFEFF' + [headers, ...rows.map(r => r.cells)].map(r => r.map(quote).join(',')).join('\r\n'); }
 export function quality(rows: Row[], issues: Issue[]) { if (!rows.length) return 0; const bad = new Set(issues.map(i => i.row)).size; return Math.round(100 * (rows.length - bad) / rows.length); }
 
+// A handoff gate is stricter than a per-row quality score: a duplicate group is
+// unresolved as a whole. No member should silently enter a partial delivery.
+export function handoffReport(data: Dataset, mapping: Mapping, changes: Change[] = [], extraIssues: Issue[] = []) {
+  if (!validateMapping(mapping, data.headers.length)) throw new Error('Confirm a valid column mapping before preparing a handoff.');
+  const rows = applyChanges(data.rows, changes);
+  const missingFields = FIELDS.filter(f => f !== 'category' && mapping[f] === undefined);
+  const issues = [...scan(rows, mapping), ...extraIssues.filter(i => rows.find(r => r.id === i.row)?.cells[i.column] === i.before)];
+  const reasons = new Map<number, Set<string>>(rows.map(r => [r.id, new Set<string>()]));
+  for (const row of rows) if (missingFields.length) reasons.get(row.id)!.add('Required columns not mapped: ' + missingFields.map(f => LABELS[f]).join(', '));
+  for (const issue of issues) reasons.get(issue.row)?.add(issue.kind + ': ' + issue.reason);
+  const duplicateGroups: { kind: string; rows: number[] }[] = [];
+  for (const kind of ['Identical record', 'Repeated SKU']) {
+    if (kind === 'Repeated SKU' && mapping.sku === undefined) continue;
+    const groups = new Map<string, number[]>();
+    for (const row of rows) {
+      const key = kind === 'Identical record' ? JSON.stringify(row.cells) : row.cells[mapping.sku!].trim();
+      if (!key) continue;
+      groups.set(key, [...(groups.get(key) || []), row.id]);
+    }
+    for (const ids of groups.values()) if (ids.length > 1) {
+      duplicateGroups.push({ kind, rows: ids });
+      for (const id of ids) reasons.get(id)!.add(kind + ' group (rows ' + ids.join(', ') + '): verify all members before handoff; separate stock lots may be legitimate.');
+    }
+  }
+  const held = rows.filter(r => reasons.get(r.id)!.size).map(r => ({ row: r.id, reasons: [...reasons.get(r.id)!] }));
+  const eligibleIds = rows.filter(r => !reasons.get(r.id)!.size).map(r => r.id);
+  const currentIds = new Set(rows.map(r => r.id));
+  const removedIds = data.rows.filter(r => !currentIds.has(r.id)).map(r => r.id);
+  const materialChanges: { row: number; field: string; before: string; after: string }[] = [];
+  for (const row of rows) {
+    const original = data.rows.find(r => r.id === row.id)!;
+    for (const field of ['sku', 'quantity', 'price'] as Field[]) {
+      const col = mapping[field];
+      if (col !== undefined && original.cells[col].trim() !== row.cells[col].trim()) materialChanges.push({ row: row.id, field: LABELS[field], before: original.cells[col], after: row.cells[col] });
+    }
+  }
+  return { version: 1, scope: 'Mapped inventory rules plus active AI proposals; not a factual accuracy certificate.', status: !rows.length ? 'empty' : held.length ? 'verification-needed' : 'checks-passed', originalCount: data.rows.length, currentCount: rows.length, eligibleIds, held, removedIds, missingFields, duplicateGroups, materialChanges, activeRepairCount: changes.length };
+}
+
 export const SAMPLE = `SKU,Product name,Quantity,Unit,Unit price,Category
 DR-1001,Canvas tote,24,pieces,18.50,Accessories
 DR-1002, Ceramic mug ,36,PCS,12.00,Home

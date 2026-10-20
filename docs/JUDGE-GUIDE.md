@@ -34,3 +34,7 @@ Open http://localhost:5173. No package installation is required. The data is syn
 
 ## Known boundaries
 Mapping is locked after applying repairs. Refresh clears the session; export first. The audit is downloadable but not importable. The passing-row metric measures current checks, not truth. AI review is bounded to 60 original rows.
+
+## Rehearse the handoff
+Click Rehearse handoff before applying repairs: 9 of 20 sample rows pass, with 16 projected after eight safe repairs. Apply them and reopen the report. Export 16 passing rows and 4 held rows separately. Both members of the duplicate group remain held; this stricter group rule explains why the handoff count differs from the per-row finding score. Download the JSON report for source-row lineage, conservation and AI coverage. See EVALUATION.md for unfamiliar synthetic datasets, reproducible results and a deliberate contextual blind spot.
+

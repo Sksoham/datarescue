@@ -1,0 +1,5 @@
+SKU,Name,Quantity,Unit,Price,Lot
+CL-01,Gauze,10,box,3.50,LOT-A
+CL-01,Gauze,12,box,3.50,LOT-B
+CL-02,Gloves,,box,7.00,LOT-C
+CL-03,Mask,30,pcs,0.80,LOT-D

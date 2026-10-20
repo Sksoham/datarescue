@@ -26,10 +26,32 @@ function refresh() {
   $('issue-count').textContent=findings.length;
   for (const t of ['review','data','audit']) { $('tab-'+t).classList.toggle('selected',s.tab===t); $('tab-'+t).setAttribute('aria-selected',String(s.tab===t)); }
   $('panel').setAttribute('aria-labelledby','tab-'+s.tab);
+  renderHandoff();
   document.querySelectorAll('.side-link[data-action="review"],.side-link[data-action="audit"]').forEach(el=>el.classList.toggle('active',el.dataset.action===(s.tab==='audit'?'audit':'review')));
   renderPanel();
 }
 function pagination(count,size) { const start=Math.min(s.page*size+1,count),end=Math.min((s.page+1)*size,count); return `<div><button data-action="previous" ${s.page===0?'disabled':''}>Previous</button><span>${start}–${end} of ${count}</span><button data-action="next" ${(s.page+1)*size>=count?'disabled':''}>Next</button></div>`; }
+
+function gate() { return handoffReport(s.data,s.mapping,s.changes,s.aiIssues); }
+function renderHandoff() {
+  const report=gate();
+  $('handoff').innerHTML=`<div class="handoff-mark" aria-hidden="true">⇄</div><div><span class="ai-kicker">DON'T JUST CLEAN IT. KNOW WHAT YOU CAN HAND OFF.</span><h3>${report.eligibleIds.length} rows pass checks <span>· ${report.held.length} on hold</span></h3><p>${report.missingFields.length?'Map the required columns before any row can pass.':'Duplicate groups stay together. Uncertain records stay visible.'}</p></div><button class="button small" data-action="handoff" ${s.busy?'disabled':''}>Rehearse handoff ↗</button>`;
+}
+function handoffDialog() {
+  const report=gate(), safe=findings.filter(i=>i.severity==='safe'&&!s.kept.includes(i.id));
+  const rehearsed=handoffReport(s.data,s.mapping,[...s.changes,...safe],s.aiIssues);
+  show(`<span class="eyebrow">REHEARSE BEFORE YOU RELEASE</span><h2>What can you hand off?</h2><p>A rules-based handoff check, not a guarantee of factual correctness. Nothing is applied by this preview.</p><div class="handoff-comparison"><div><small>CURRENT WORKING DATA</small><strong>${report.eligibleIds.length}<span> / ${report.currentCount}</span></strong><p>rows pass checks</p></div><span aria-hidden="true">→</span><div><small>AFTER ${safe.length} SAFE REPAIRS</small><strong>${rehearsed.eligibleIds.length}<span> / ${rehearsed.currentCount}</span></strong><p>${rehearsed.held.length} rows would stay on hold</p></div></div><div class="explanation"><strong>Conservation check</strong><p>${report.originalCount} original rows = ${report.eligibleIds.length} passing + ${report.held.length} held + ${report.removedIds.length} explicitly removed. ${report.materialChanges.length} identifier, quantity, or price cells changed beyond trimming.</p><p>${report.duplicateGroups.length?'All members of unresolved duplicate groups are held, including the first occurrence.':'No unresolved duplicate groups.'}</p></div><h3 class="gate-subheading">${report.held.length?'Why records are on hold':'Mapped checks passed'}</h3><ul class="gate-reasons">${report.held.slice(0,4).map(r=>`<li><b>Source row ${r.row}</b><span>${escape(r.reasons[0])}${r.reasons.length>1?` (+${r.reasons.length-1} more)`:''}</span></li>`).join('')||'<li>Review your source records before operational use. These checks cannot detect every business error.</li>'}</ul>${report.held.length>4?`<p>Showing 4 of ${report.held.length} held rows. The report includes every reason.</p>`:''}<p><strong>AI coverage:</strong> ${s.ai?`A live review examined ${s.ai.reviewedRows} original rows; remaining rows were not reviewed by AI.`:'No successful live AI review in this session. Contextual errors may remain even in passing rows.'} Category correctness is not certified.</p><div class="modal-actions">${safe.length?`<button class="button primary" data-action="approve-safe">Apply ${safe.length} safe repairs</button>`:''}<button class="button" data-action="gate-report">Download handoff report</button></div><div class="gate-downloads"><p>Download the <strong>current</strong> split. Previewed repairs are not included until applied. CSV formula escaping still applies.</p><button class="button small" data-action="gate-pass" ${!report.eligibleIds.length?'disabled':''}>Passing rows CSV (${report.eligibleIds.length})</button><button class="button small" data-action="gate-hold" ${!report.held.length?'disabled':''}>Held rows CSV (${report.held.length})</button></div>`);
+}
+async function downloadGateReport() {
+  const report=gate();
+  const canonical=JSON.stringify({headers:s.data.headers,rows:s.data.rows});
+  const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(canonical));
+  const sha256=[...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,'0')).join('');
+  const rowMap=ids=>ids.map((id,i)=>({csvDataRow:i+1,sourceRowId:id}));
+  const result={...report,file:s.filename,generatedAt:new Date().toISOString(),mapping:s.mapping,sourceFingerprint:{algorithm:'SHA-256',representation:'UTF-8 JSON.stringify({headers,rows}) of parsed original data, including source row IDs; not raw file bytes',sha256},aiCoverage:s.ai?{reviewedOriginalRows:s.ai.reviewedRows,model:s.ai.model,scope:'At most the first 60 original rows'}:{status:'No successful live AI review'},exportRowMaps:{passing:rowMap(report.eligibleIds),held:rowMap(report.held.map(r=>r.row))},limitations:['Passing means no mapped rules or active proposal flags, not verified business truth.','Category accuracy, cross-system reconciliation, currencies, and unit conversion are not certified.','Keep the audit JSON for original values and the full decision history.']};
+  save('datarescue-handoff-report.json',JSON.stringify(result,null,2),'application/json');
+  log('Downloaded handoff report',{sourceFingerprint:sha256,passing:report.eligibleIds.length,held:report.held.length,removed:report.removedIds.length});
+}
 function renderPanel() {
   if(s.tab==='review') {
     visible=findings.filter(i=>(s.filter==='all'||s.filter===i.severity||(s.filter==='kept'&&s.kept.includes(i.id)))&&`${i.kind} ${i.before} ${i.reason} ${i.row}`.toLowerCase().includes(s.query.toLowerCase()));
@@ -64,6 +86,9 @@ document.addEventListener('click',async event=>{
   else if(action==='dismiss'){s.error='';s.notice='';refresh();}
   else if(action==='close')close();
   else if(action==='settings')settingsDialog();
+  else if(action==='handoff')handoffDialog();
+  else if(action==='gate-report'){try{await downloadGateReport();}catch{show('<h2>Report could not be downloaded</h2><p>Use a secure HTTPS or localhost connection, then try again.</p>');}}
+  else if(action==='gate-pass'||action==='gate-hold'){const report=gate();const ids=new Set(action==='gate-pass'?report.eligibleIds:report.held.map(r=>r.row));save(s.filename.replace(/\.csv$/i,'')+(action==='gate-pass'?'-passing-checks.csv':'-on-hold.csv'),csvText(s.data.headers,currentRows.filter(r=>ids.has(r.id))),'text/csv;charset=utf-8');log('Exported handoff split',{part:action==='gate-pass'?'passing':'held',sourceRowIds:[...ids]});}
   else if(action==='refresh-config'){await config();settingsDialog();}
   else if(action==='mapping')mappingDialog();
   else if(action==='confirm-map'){log('Confirmed column mapping',{...s.mapping});close();refresh();}

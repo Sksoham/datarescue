@@ -12,4 +12,6 @@ jobs:
           node-version: '24'
       - run: node scripts/build-rescue.mjs
       - run: node --test tests/rescue.test.mjs
+      - run: node scripts/evaluate-rescue.mjs
       - run: node scripts/validate-rescue.mjs
+

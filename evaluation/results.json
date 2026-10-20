@@ -1,0 +1,109 @@
+{
+  "evaluationVersion": 1,
+  "provenance": "Developer-authored synthetic fixtures introduced after the original demo. Golden expectations written before the first evaluation run. Not a blinded, independent, or real-customer benchmark.",
+  "liveModelEvaluated": false,
+  "fixedDatasets": 8,
+  "fixedRows": 28,
+  "exactSafeRepairs": {
+    "proposed": 5,
+    "matchingGold": 5,
+    "expected": 5
+  },
+  "heldRowsAfterSafeRepairs": 15,
+  "generatedInvariantVariations": 100,
+  "knownContextualErrorsNotDetectedByRules": 1,
+  "limitations": [
+    "Small synthetic corpus; perfect agreement here does not establish general accuracy.",
+    "No live Nemotron accuracy, latency, cost, or user time savings measured.",
+    "A category typo intentionally passes mapped rules; human verification remains necessary.",
+    "Generated variants are related cases, not 100 independent datasets."
+  ],
+  "cases": [
+    {
+      "fixture": "hardware.csv",
+      "rows": 3,
+      "safeRepairs": 4,
+      "passingRows": 3,
+      "heldRows": 0,
+      "missingMapping": [],
+      "knownContextualErrorsOutsideRules": 0,
+      "passed": true
+    },
+    {
+      "fixture": "clinic-lots.csv",
+      "rows": 4,
+      "safeRepairs": 0,
+      "passingRows": 1,
+      "heldRows": 3,
+      "missingMapping": [],
+      "knownContextualErrorsOutsideRules": 0,
+      "passed": true
+    },
+    {
+      "fixture": "cafe-locales.csv",
+      "rows": 5,
+      "safeRepairs": 1,
+      "passingRows": 1,
+      "heldRows": 4,
+      "missingMapping": [],
+      "knownContextualErrorsOutsideRules": 0,
+      "passed": true
+    },
+    {
+      "fixture": "multilingual.csv",
+      "rows": 4,
+      "safeRepairs": 0,
+      "passingRows": 4,
+      "heldRows": 0,
+      "missingMapping": [],
+      "knownContextualErrorsOutsideRules": 0,
+      "passed": true
+    },
+    {
+      "fixture": "warehouse-conflicts.csv",
+      "rows": 5,
+      "safeRepairs": 0,
+      "passingRows": 1,
+      "heldRows": 4,
+      "missingMapping": [],
+      "knownContextualErrorsOutsideRules": 0,
+      "passed": true
+    },
+    {
+      "fixture": "untrusted-notes.csv",
+      "rows": 3,
+      "safeRepairs": 0,
+      "passingRows": 1,
+      "heldRows": 2,
+      "missingMapping": [],
+      "knownContextualErrorsOutsideRules": 0,
+      "passed": true
+    },
+    {
+      "fixture": "unknown-schema.csv",
+      "rows": 2,
+      "safeRepairs": 0,
+      "passingRows": 0,
+      "heldRows": 2,
+      "missingMapping": [
+        "sku",
+        "name",
+        "quantity",
+        "unit",
+        "price"
+      ],
+      "knownContextualErrorsOutsideRules": 0,
+      "passed": true
+    },
+    {
+      "fixture": "contextual-blindspot.csv",
+      "rows": 2,
+      "safeRepairs": 0,
+      "passingRows": 2,
+      "heldRows": 0,
+      "missingMapping": [],
+      "knownContextualErrorsOutsideRules": 1,
+      "passed": true
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+SKU,Name,Quantity,Unit,Price
+CF-1,Milk,5,L,"1,50"
+CF-2,Coffee,"1,000",g,0.03
+CF-3,Cups,2,crates,20
+CF-4,Sugar,500,grams,0.01
+CF-5,Tea,-2,box,6
